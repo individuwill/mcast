@@ -30,13 +30,13 @@ func getUDPConnection(address string, port int, localInterface *net.Interface) (
 	return udpConn, err
 }
 
-type Message struct {
+type message struct {
 	Data []byte
 	CM   *ipv4.ControlMessage
 	Src  net.Addr
 }
 
-func messagePrinter(messageCh <-chan Message, showData bool) {
+func messagePrinter(messageCh <-chan message, showData bool) {
 	for message := range messageCh {
 		if message.CM != nil {
 			fmt.Printf("*Received %d bytes on %v with ttl: %v from %v*\n",
@@ -51,7 +51,7 @@ func messagePrinter(messageCh <-chan Message, showData bool) {
 	}
 }
 
-func receive(address string, port int, interfaceName string, showData bool, messageCh chan Message) error {
+func receive(address string, port int, interfaceName string, showData bool, messageCh chan message) error {
 	localInterface, err := getInterface(interfaceName)
 	if err != nil {
 		return err
@@ -75,12 +75,18 @@ func receive(address string, port int, interfaceName string, showData bool, mess
 		}
 		data := make([]byte, n)
 		copy(data, buf)
-		messageCh <- Message{Data: data, CM: cm, Src: src}
+		messageCh <- message{Data: data, CM: cm, Src: src}
 	}
 }
 
+// Receive will listen on the port and addresses provided for incoming UDP messages.
+// Uponn receipt of a UDP message, a message will be printed to the console.
+// If showData is true, the data contained in that message will also be printed
+// with the assumption that the data is a string.
+// address can be in CIDR notation, in which case all of the addresses falling
+// within that network will be listened on
 func Receive(address string, port int, interfaceName string, showData bool) error {
-	messageCh := make(chan Message, 1000)
+	messageCh := make(chan message, 1000)
 	go messagePrinter(messageCh, showData)
 
 	if strings.Contains(address, "/") {
