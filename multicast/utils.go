@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"net"
+	"strconv"
+	"strings"
 )
 
 // ComputeChecksum returns the 16bit 1's compliment for the given byte slice
@@ -78,4 +80,14 @@ func IPList(network string, mask int) ([]net.IP, error) {
 	}
 
 	return hostAddresses, nil
+}
+
+func SplitCIDR(address string) (string, int, error) {
+	addressParts := strings.Split(address, "/")
+	network := addressParts[0]
+	mask, err := strconv.ParseInt(addressParts[1], 10, 32)
+	if err != nil {
+		return "", 0, err
+	}
+	return network, int(mask), nil
 }

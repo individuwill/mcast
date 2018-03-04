@@ -3,6 +3,7 @@ package multicast
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	"golang.org/x/net/ipv4"
 )
@@ -50,7 +51,7 @@ func messagePrinter(messageCh <-chan Message, showData bool) {
 	}
 }
 
-func Receive(address string, port int, interfaceName string, showData bool) error {
+func receive(address string, port int, interfaceName string, showData bool, messageCh chan Message) error {
 	localInterface, err := getInterface(interfaceName)
 	if err != nil {
 		return err
@@ -67,9 +68,6 @@ func Receive(address string, port int, interfaceName string, showData bool) erro
 	packetConn.SetControlMessage(ipv4.FlagTTL|ipv4.FlagSrc|ipv4.FlagDst|ipv4.FlagInterface, true)
 	buf := make([]byte, 2048)
 
-	messageCh := make(chan Message, 1000)
-	go messagePrinter(messageCh, showData)
-
 	for {
 		n, cm, src, err := packetConn.ReadFrom(buf)
 		if err != nil {
@@ -79,4 +77,27 @@ func Receive(address string, port int, interfaceName string, showData bool) erro
 		copy(data, buf)
 		messageCh <- Message{Data: data, CM: cm, Src: src}
 	}
+}
+
+func Receive(address string, port int, interfaceName string, showData bool) error {
+	messageCh := make(chan Message, 1000)
+	go messagePrinter(messageCh, showData)
+
+	if strings.Contains(address, "/") {
+		network, mask, err := SplitCIDR(address)
+		if err != nil {
+			return err
+		}
+		ips, err := IPList(network, mask)
+		if err != nil {
+			return err
+		}
+		for _, ip := range ips {
+			go receive(ip.String(), port, interfaceName, showData, messageCh)
+		}
+		for { // block this method call
+		}
+	}
+
+	return receive(address, port, interfaceName, showData, messageCh)
 }

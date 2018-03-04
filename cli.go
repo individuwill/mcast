@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -318,9 +317,7 @@ func showHelpMessage() {
 
 func processSendCommand(sendGroup *string, sendPort *int, sendInterfaceIP, sendText *string, sendTTL, sendTOS, sendPadding, sendInterval, sendStart, sendMax *int) {
 	if strings.Contains(*sendGroup, "/") { // is really a many sender
-		addressParts := strings.Split(*sendGroup, "/")
-		network := addressParts[0]
-		mask, err := strconv.ParseInt(addressParts[1], 10, 32)
+		network, mask, err := multicast.SplitCIDR(*sendGroup)
 		if err != nil {
 			fmt.Printf("Couldn't parse the mask")
 			os.Exit(1)
@@ -416,7 +413,7 @@ func processCommands() {
 	leaveCommand := flag.NewFlagSet(leaveWord, flag.ExitOnError)
 
 	// send subcommand
-	sendGroup := sendCommand.String("group", defaultSendRecvAddress, "destination multicast group address")
+	sendGroup := sendCommand.String("group", defaultSendRecvAddress, "destination multicast group address. Can use CIDR notation to send on multiple addresses.")
 	sendPort := sendCommand.Int("port", defaultSendRecvPort, "destination port")
 	sendInterfaceIP := sendCommand.String("interface-ip", "", "interface to use defined by IP addrress. default allows system to decide. must be in 0.0.0.0:0000 format")
 	sendTTL := sendCommand.Int("ttl", defaultSendTTL, "IP ttl (time to live)")
@@ -428,7 +425,7 @@ func processCommands() {
 	sendMax := sendCommand.Int("max", 0, "number of packets to send. '0' for unlimited")
 
 	// recieve subcommand
-	receiveGroup := receiveCommand.String("group", defaultSendRecvAddress, "multicast group address to listen on")
+	receiveGroup := receiveCommand.String("group", defaultSendRecvAddress, "multicast group address to listen on. Can use CIDR notation to listen on multiple addresses.")
 	receivePort := receiveCommand.Int("port", defaultSendRecvPort, "port to listen on")
 	receiveInterface := receiveCommand.String("interface", "", "interface name use. default allows system to decide")
 	receiveShowData := receiveCommand.Bool("show", true, "Print the data received to the console.")
