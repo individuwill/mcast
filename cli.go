@@ -379,13 +379,13 @@ func processSendCommand(sendGroup *string, sendPort *int, sendInterfaceIP, sendT
 	}
 }
 
-func processReceiveCommand(receiveGroup *string, receivePort *int, receiveInterface *string) {
+func processReceiveCommand(receiveGroup *string, receivePort *int, receiveInterface *string, receiveShowData *bool) {
 	visibleInterface := "host-chosen"
 	if *receiveInterface != "" {
 		visibleInterface = *receiveInterface
 	}
 	fmt.Printf("Listening on %v:%d interface: %v\n", *receiveGroup, *receivePort, visibleInterface)
-	err := multicast.Receive(*receiveGroup, *receivePort, *receiveInterface)
+	err := multicast.Receive(*receiveGroup, *receivePort, *receiveInterface, *receiveShowData)
 	if err != nil {
 		fmt.Println("Problem receiving")
 		fmt.Println(err)
@@ -431,6 +431,7 @@ func processCommands() {
 	receiveGroup := receiveCommand.String("group", defaultSendRecvAddress, "multicast group address to listen on")
 	receivePort := receiveCommand.Int("port", defaultSendRecvPort, "port to listen on")
 	receiveInterface := receiveCommand.String("interface", "", "interface name use. default allows system to decide")
+	receiveShowData := receiveCommand.Bool("show", true, "Print the data received to the console.")
 
 	// query subcommand
 	queryInterface := queryCommand.String("interface", "", "interface name use. default allows system to decide")
@@ -467,7 +468,7 @@ func processCommands() {
 		processSendCommand(sendGroup, sendPort, sendInterfaceIP, sendText, sendTTL, sendTOS, sendPadding, sendInterval, sendStart, sendMax)
 	case receiveWord:
 		receiveCommand.Parse(args)
-		processReceiveCommand(receiveGroup, receivePort, receiveInterface)
+		processReceiveCommand(receiveGroup, receivePort, receiveInterface, receiveShowData)
 	case queryWord:
 		queryCommand.Parse(args)
 		processQueryCommand(queryInterface, queryInterfaceIP, queryInterval, queryMaxResponseTime, queryPlayNice)
@@ -530,7 +531,7 @@ func testMany() {
 }
 
 func testReceive() {
-	err := multicast.Receive("0.0.0.0", 5050, "")
+	err := multicast.Receive("0.0.0.0", 5050, "", true)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,7 +1,7 @@
 package multicast
 
 import (
-	"log"
+	"fmt"
 	"net"
 
 	"golang.org/x/net/ipv4"
@@ -29,7 +29,28 @@ func getUDPConnection(address string, port int, localInterface *net.Interface) (
 	return udpConn, err
 }
 
-func Receive(address string, port int, interfaceName string) error {
+type Message struct {
+	Data []byte
+	CM   *ipv4.ControlMessage
+	Src  net.Addr
+}
+
+func messagePrinter(messageCh <-chan Message, showData bool) {
+	for message := range messageCh {
+		if message.CM != nil {
+			fmt.Printf("*Received %d bytes on %v with ttl: %v from %v*\n",
+				len(message.Data), message.CM.Dst, message.CM.TTL, message.Src)
+		} else {
+			fmt.Printf("*Received %d bytes from %v*\n", len(message.Data), message.Src)
+		}
+		if showData {
+			fmt.Printf("%s\n", message.Data)
+			fmt.Println()
+		}
+	}
+}
+
+func Receive(address string, port int, interfaceName string, showData bool) error {
 	localInterface, err := getInterface(interfaceName)
 	if err != nil {
 		return err
@@ -46,16 +67,16 @@ func Receive(address string, port int, interfaceName string) error {
 	packetConn.SetControlMessage(ipv4.FlagTTL|ipv4.FlagSrc|ipv4.FlagDst|ipv4.FlagInterface, true)
 	buf := make([]byte, 2048)
 
+	messageCh := make(chan Message, 1000)
+	go messagePrinter(messageCh, showData)
+
 	for {
 		n, cm, src, err := packetConn.ReadFrom(buf)
 		if err != nil {
 			return err
 		}
-		if cm != nil {
-			log.Printf("Received %d bytes on %v with ttl: %v from %v\n", n, cm.Dst, cm.TTL, src)
-		} else {
-			log.Printf("Received %d bytes from %v\n", n, src)
-		}
+		data := make([]byte, n)
+		copy(data, buf)
+		messageCh <- Message{Data: data, CM: cm, Src: src}
 	}
-	return nil
 }
