@@ -379,9 +379,17 @@ func processSendCommand(sendGroup *string, sendPort *int, sendInterfaceIP, sendT
 	}
 }
 
-func processRecieveCommand(receiveGroup *string, receivePort *int, receiveInterface, receiveInterfaceIP *string) {
-
-	panic("Not implemented")
+func processReceiveCommand(receiveGroup *string, receivePort *int, receiveInterface *string) {
+	visibleInterface := "host-chosen"
+	if *receiveInterface != "" {
+		visibleInterface = *receiveInterface
+	}
+	fmt.Printf("Listening on %v:%d interface: %v\n", *receiveGroup, *receivePort, visibleInterface)
+	err := multicast.Receive(*receiveGroup, *receivePort, *receiveInterface)
+	if err != nil {
+		fmt.Println("Problem receiving")
+		fmt.Println(err)
+	}
 }
 
 func processQueryCommand(queryInterface, queryInterfaceIP *string, queryInterval, queryMaxResponseTime *int, queryPlayNice *bool) {
@@ -423,7 +431,6 @@ func processCommands() {
 	receiveGroup := receiveCommand.String("group", defaultSendRecvAddress, "multicast group address to listen on")
 	receivePort := receiveCommand.Int("port", defaultSendRecvPort, "port to listen on")
 	receiveInterface := receiveCommand.String("interface", "", "interface name use. default allows system to decide")
-	receiveInterfaceIP := receiveCommand.String("interface-ip", "", "interface to use defined by IP addrress. default allows system to decide")
 
 	// query subcommand
 	queryInterface := queryCommand.String("interface", "", "interface name use. default allows system to decide")
@@ -460,7 +467,7 @@ func processCommands() {
 		processSendCommand(sendGroup, sendPort, sendInterfaceIP, sendText, sendTTL, sendTOS, sendPadding, sendInterval, sendStart, sendMax)
 	case receiveWord:
 		receiveCommand.Parse(args)
-		processRecieveCommand(receiveGroup, receivePort, receiveInterface, receiveInterfaceIP)
+		processReceiveCommand(receiveGroup, receivePort, receiveInterface)
 	case queryWord:
 		queryCommand.Parse(args)
 		processQueryCommand(queryInterface, queryInterfaceIP, queryInterval, queryMaxResponseTime, queryPlayNice)
@@ -494,7 +501,7 @@ func processCommands() {
 			}
 		}
 		fallthrough
-	case "default":
+	default:
 		showHelpMessage()
 	}
 }
@@ -522,10 +529,18 @@ func testMany() {
 	time.Sleep(5 * time.Second)
 }
 
+func testReceive() {
+	err := multicast.Receive("0.0.0.0", 5050, "")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	log.Println("Starting...")
 	//testBasic()
 	processCommands()
+	//testReceive()
 	//fmt.Println(multicast.IPList("239.1.0.0", 23))
 	//testMany()
 	//sendText("test")

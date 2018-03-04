@@ -3,31 +3,59 @@ package multicast
 import (
 	"log"
 	"net"
+
+	"golang.org/x/net/ipv4"
 )
 
-func Receive(address string) {
-	b := make([]byte, 1024, 1024)
-	oob := make([]byte, 1024, 1024)
-	udpAddr, err := net.ResolveUDPAddr("udp", "239.1.1.5:5050")
-	if err != nil {
-		log.Fatal(err)
+func getInterface(interfaceName string) (*net.Interface, error) {
+	var localInterface *net.Interface
+	var err error
+	if interfaceName != "" {
+		localInterface, err = net.InterfaceByName(interfaceName)
 	}
-	udpConn, err := net.ListenMulticastUDP("udp", nil, udpAddr)
+	return localInterface, err
+}
 
+func getUDPConnection(address string, port int, localInterface *net.Interface) (*net.UDPConn, error) {
+	var udpConn *net.UDPConn
+	var err error
+	ip := net.ParseIP(address)
+	udpAddr := &net.UDPAddr{IP: ip, Port: port}
+	if ip.IsMulticast() {
+		udpConn, err = net.ListenMulticastUDP("udp", localInterface, udpAddr)
+	} else {
+		udpConn, err = net.ListenUDP("udp", udpAddr)
+	}
+	return udpConn, err
+}
+
+func Receive(address string, port int, interfaceName string) error {
+	localInterface, err := getInterface(interfaceName)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+
+	udpConn, err := getUDPConnection(address, port, localInterface)
+	if err != nil {
+		return err
 	}
 	defer udpConn.Close()
 
+	packetConn := ipv4.NewPacketConn(udpConn)
+	defer packetConn.Close()
+	packetConn.SetControlMessage(ipv4.FlagTTL|ipv4.FlagSrc|ipv4.FlagDst|ipv4.FlagInterface, true)
+	buf := make([]byte, 2048)
+
 	for {
-		n, oobn, flags, fromAddr, err := udpConn.ReadMsgUDP(b, oob)
+		n, cm, src, err := packetConn.ReadFrom(buf)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-		if n > 0 {
-			log.Printf("Read %d bytes, %d oob, with flags %d from %s\n", n, oobn, flags, fromAddr)
-			log.Printf("Bytes: %s\n", b[:n])
-			log.Printf("OOB: %s\n", oob[:oobn])
+		if cm != nil {
+			log.Printf("Received %d bytes on %v with ttl: %v from %v\n", n, cm.Dst, cm.TTL, src)
+		} else {
+			log.Printf("Received %d bytes from %v\n", n, src)
 		}
 	}
+	return nil
 }
