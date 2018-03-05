@@ -82,6 +82,7 @@ func IPList(network string, mask int) ([]net.IP, error) {
 	return hostAddresses, nil
 }
 
+// SplitCIDR returns the ip, or network portion and the mask as 2 separate values for a given address.
 func SplitCIDR(address string) (string, int, error) {
 	addressParts := strings.Split(address, "/")
 	network := addressParts[0]
@@ -92,6 +93,10 @@ func SplitCIDR(address string) (string, int, error) {
 	return network, int(mask), nil
 }
 
+// GetInterface returns the interface associated with the name provided.
+// It wraps the net.InterfaceByName only adding functionality to allow
+// the specified interface to be an empty string. This helps with command
+// line processing where the default value is an empty string.
 func GetInterface(interfaceName string) (*net.Interface, error) {
 	var localInterface *net.Interface
 	var err error
