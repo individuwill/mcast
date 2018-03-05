@@ -93,6 +93,16 @@ func SplitCIDR(address string) (string, int, error) {
 	return network, int(mask), nil
 }
 
+// IPListCIDR is a convenience function combining SplitCIDR and IPList.
+// It takes an address in CIDR format and returns a slice of IPs within that range.
+func IPListCIDR(address string) ([]net.IP, error) {
+	network, mask, err := SplitCIDR(address)
+	if err != nil {
+		return nil, err
+	}
+	return IPList(network, mask)
+}
+
 // GetInterface returns the interface associated with the name provided.
 // It wraps the net.InterfaceByName only adding functionality to allow
 // the specified interface to be an empty string. This helps with command
