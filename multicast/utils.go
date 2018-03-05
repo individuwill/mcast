@@ -91,3 +91,12 @@ func SplitCIDR(address string) (string, int, error) {
 	}
 	return network, int(mask), nil
 }
+
+func GetInterface(interfaceName string) (*net.Interface, error) {
+	var localInterface *net.Interface
+	var err error
+	if interfaceName != "" {
+		localInterface, err = net.InterfaceByName(interfaceName)
+	}
+	return localInterface, err
+}

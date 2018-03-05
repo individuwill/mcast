@@ -8,15 +8,6 @@ import (
 	"golang.org/x/net/ipv4"
 )
 
-func getInterface(interfaceName string) (*net.Interface, error) {
-	var localInterface *net.Interface
-	var err error
-	if interfaceName != "" {
-		localInterface, err = net.InterfaceByName(interfaceName)
-	}
-	return localInterface, err
-}
-
 func getUDPConnection(address string, port int, localInterface *net.Interface) (*net.UDPConn, error) {
 	var udpConn *net.UDPConn
 	var err error
@@ -52,7 +43,7 @@ func messagePrinter(messageCh <-chan message, showData bool) {
 }
 
 func receive(address string, port int, interfaceName string, showData bool, messageCh chan message) error {
-	localInterface, err := getInterface(interfaceName)
+	localInterface, err := GetInterface(interfaceName)
 	if err != nil {
 		return err
 	}
