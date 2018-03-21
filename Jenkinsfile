@@ -7,12 +7,6 @@ pipeline {
                 sh 'go build'
             }
         }
-        stage('Test') {
-            sh 'echo testing...'
-        }
-        stage('Deploy') {
-            sh 'echo Deploying...'
-        }
     }
     post {
         always {
