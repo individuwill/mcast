@@ -65,11 +65,19 @@ this is the case. Below is a detailed explanation of each subcommand and
 its associated options
 
 ### help
+Display help and usage message for the application
+
+    mcast help [command]
+
+Help for a specific subcommand can be shown by specifying the command you want
+help with.
 
 ### send
 Will send UDP traffic to an IP address, usually a multicast one. Will send continuously
 in a loop at specified interval until the program is terminated or max number of messages
 are sent.
+
+    mcast send [options...]
 
 The options are:
 * -group : IP destination address. Can use CIDR notation to send to multiple address
