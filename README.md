@@ -87,7 +87,7 @@ are sent.
     mcast send [-options...]
 
 The options are:
-* -group : IP destination address. Can use CIDR notation to send to multiple address
+* -group : IP destination address. Can use CIDR notation to send to multiple addresses.
     * default : 239.1.1.5
 * -port : Destination UDP port
     * default : 5050
@@ -114,7 +114,7 @@ content of the received UDP messages if the option is enabled.
     mcast receive [-options...]
 
 The options are:
-* -group : IP multicast destination address. Can use CIDR notation to send to multiple address
+* -group : IP multicast destination address. Can use CIDR notation to listen to multiple multicast address.
     * default : 239.1.1.5
 * -port : Listen UDP port
     * default : 5050
