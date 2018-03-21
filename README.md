@@ -41,6 +41,8 @@ Install program with
 
     go install github.com/individuwill/mcast
 
+Or alternatively download pre-built binaries from releases [v0.1](https://github.com/individuwill/mcast/releases/download/v0.1/binaries.zip)
+
 Run the receiver on one computer
 
     mcast receive
