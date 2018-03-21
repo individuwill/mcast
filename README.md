@@ -48,7 +48,7 @@ Multicast routing must be enable between hosts
 
 mcast is driven by subcommands. You invoke mcast like:
 
-    $ mcast [-help] subcommand -option...
+    $ mcast subcommand [-options...]
 
 The list of subcommands are:
 
@@ -77,7 +77,7 @@ Will send UDP traffic to an IP address, usually a multicast one. Will send conti
 in a loop at specified interval until the program is terminated or max number of messages
 are sent.
 
-    mcast send [options...]
+    mcast send [-options...]
 
 The options are:
 * -group : IP destination address. Can use CIDR notation to send to multiple address
