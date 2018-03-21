@@ -11,6 +11,10 @@ mcast is a command line utility capable of sending and recieving multicast
 or generic UDP traffic. It also allows simulation of IGMP joins, leaves, and
 querying.
 
+__NOTE:__ Currently developed and tested on Mac OSX 10.13.3 with Go version 1.10.
+The program should work on any Posix / Unix, but currently doesn't fully work on
+Windows. Superuser rights may be required for some functionality.
+
 ## License
 This repository is licenses under GPLv3. See [LICENSE.md](./LICENSE.md) for details.
 
@@ -30,6 +34,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Quickstart
+You must have go installed. If you don't, or you're not sure, visit [https://golang.org/doc/install]. You must also be running a supported and tested
+OS and Go version.
+
 Install program with
 
     go install github.com/individuwill/mcast
@@ -48,7 +55,7 @@ Multicast routing must be enable between hosts
 
 mcast is driven by subcommands. You invoke mcast like:
 
-    $ mcast subcommand [-options...]
+    mcast subcommand [-options...]
 
 The list of subcommands are:
 
