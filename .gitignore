@@ -3,3 +3,5 @@ debug
 .vscode
 *.exe
 *.swp
+binaries.zip
+binaries/
