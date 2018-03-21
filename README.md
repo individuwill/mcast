@@ -29,6 +29,21 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+## Quickstart
+Install program with
+
+    go install github.com/individuwill/mcast
+
+Run the receiver on one computer
+
+    mcast receive
+
+Run the sender on another computer
+
+    mcast send
+
+Multicast routing must be enable between hosts
+
 ## Usage
 
 mcast is driven by subcommands. You invoke mcast like:
