@@ -1,3 +1,24 @@
+/*
+*    mcast - Command line tool and library for testing multicast traffic
+*    flows and stress testing networks and devices.
+*    Copyright (C) 2018 Will Smith
+*
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
+*
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// The mcast cli program for sending, receiving, joining
+// and querying UDP and multicast traffic
 package main
 
 import (
@@ -367,9 +388,30 @@ func processQueryCommand(queryInterface, queryInterfaceIP *string, queryInterval
 	panic("Not implemented")
 }
 
-func processJoinCommand(joinGroup, joinInterface, joinInterfaceIP *string, joinRaw *bool, joinInterval *int, joinRouterAlert *bool, joinIGMPVersion *int) {
-
-	panic("Not implemented")
+func processJoinCommand(joinGroup *string, joinPort *int, joinInterface *string, joinRaw *bool, joinInterval *int, joinRouterAlert *bool, joinIGMPVersion *int) {
+	if *joinRaw {
+		err := multicast.JoinRaw(*joinGroup, *joinPort, *joinInterface, *joinInterval, *joinRouterAlert, *joinIGMPVersion)
+		if err != nil {
+			fmt.Println("Problem with raw join of the group")
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	} else {
+		if *joinRouterAlert {
+			fmt.Println("Can not enable router alert manually with non-raw join.")
+			os.Exit(1)
+		}
+		if strings.Contains(*joinGroup, "/") {
+			fmt.Println("Can not use CIDR notation without raw option")
+			os.Exit(1)
+		}
+		err := multicast.Join(*joinGroup, *joinPort, *joinInterface)
+		if err != nil {
+			fmt.Println("Problem joining the group")
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
 }
 
 func processLeaveCommand(leaveGroup, leaveInterface, leaveInterfaceIP *string, leaveInterval, leaveMax *int) {
@@ -411,13 +453,13 @@ func processCommands() {
 	queryPlayNice := queryCommand.Bool("play-nice", false, "be silent if another querier is present")
 
 	// join subcommand
-	joinGroup := joinCommand.String("group", defaultSendRecvAddress, "multicast group to join")
+	joinGroup := joinCommand.String("group", defaultSendRecvAddress, "multicast group to join. Can use CIDR notation for multiple joins when raw option is used.")
+	joinPort := joinCommand.Int("port", 5050, "Port to use for join.")
 	joinInterface := joinCommand.String("interface", "", "interface name use. default allows system to decide")
-	joinInterfaceIP := joinCommand.String("interface-ip", "", "interface to use defined by IP addrress. default allows system to decide")
-	joinRaw := joinCommand.Bool("raw", true, "send join as raw forged packet")
-	joinInterval := joinCommand.Int("interval", 10, "interval between sending IGMP report 'join' (milliseconds)")
-	joinRouterAlert := joinCommand.Bool("router-alert", true, "set router alert flag in IP packet")
-	joinIGMPVersion := joinCommand.Int("igmp-version", 2, "igmp version to use for join")
+	joinRaw := joinCommand.Bool("raw", false, "send join as raw forged packet")
+	joinInterval := joinCommand.Int("interval", 10000, "interval between sending IGMP report 'join' (milliseconds). Can only be used if raw option is enabled.")
+	joinRouterAlert := joinCommand.Bool("router-alert", false, "set router alert flag in IP packet. Can only be used if raw option is enabled.")
+	joinIGMPVersion := joinCommand.Int("igmp-version", 2, "igmp version to use for join. Can only be used if raw option is enabled.")
 
 	// leave subcommand
 	leaveGroup := leaveCommand.String("group", defaultSendRecvAddress, "multicast group to send leave for")
@@ -444,7 +486,7 @@ func processCommands() {
 		processQueryCommand(queryInterface, queryInterfaceIP, queryInterval, queryMaxResponseTime, queryPlayNice)
 	case joinWord:
 		joinCommand.Parse(args)
-		processJoinCommand(joinGroup, joinInterface, joinInterfaceIP, joinRaw, joinInterval, joinRouterAlert, joinIGMPVersion)
+		processJoinCommand(joinGroup, joinPort, joinInterface, joinRaw, joinInterval, joinRouterAlert, joinIGMPVersion)
 	case leaveWord:
 		leaveCommand.Parse(args)
 		processLeaveCommand(leaveGroup, leaveInterface, leaveInterfaceIP, leaveInterval, leaveMax)
