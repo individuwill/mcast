@@ -102,8 +102,35 @@ The options are:
 
 ### receive
 
+The options are:
+
+
 ### join
+
+Not implemented yet
 
 ### leave
 
+Not implemented yet
+
 ### query
+
+Not implemented yet
+
+## Background
+I wrote this program to test multicast functionality in my network designs as I found
+existing tooling for testing multicast lacking. I needed a small portable binary
+that I could copy to any host for quick testing.
+
+I took the opportunity to use this program to learn more about multicast and
+do some coding in Golang.
+
+I used the [https://github.com/troglobit/mtools] suite for initial testing of the program while developing it. That toolset was also inspiration for mcast. I chose not to extend
+mtools as I wanted easy concurrency and easy cross compiling and cross platform binaries.
+
+### Other tools for testing multicast
+Here are some other tools I use or used for testing multicast functionality
+
+* [VLC](https://www.videolan.org)
+* [iPerf](https://iperf.fr/) (version 2)
+* [Wireshark](https://www.wireshark.org/)
