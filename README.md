@@ -73,7 +73,7 @@ Help for a specific subcommand can be shown by specifying the command you want
 help with.
 
 ### send
-Will send UDP traffic to an IP address, usually a multicast one. Will send continuously
+Will send UDP traffic to the IP address specified. Will send continuously
 in a loop at specified interval until the program is terminated or max number of messages
 are sent.
 
@@ -101,9 +101,19 @@ The options are:
     * default : 0
 
 ### receive
+Will listen to UDP traffic on the IP address specified and print out the text
+content of the received UDP messages if the option is enabled.
+
+    mcast receive [-options...]
 
 The options are:
-
+* -group : IP multicast destination address. Can use CIDR notation to send to multiple address
+    * default : 239.1.1.5
+* -port : Listen UDP port
+    * default : 5050
+* -interface : Interface name to listen on. Default allows system to decide.
+* -show : Print the text contained in the received UDP message.
+    * default : true
 
 ### join
 
