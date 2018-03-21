@@ -69,7 +69,7 @@ The list of subcommands are:
 Each subcommand then has a set of options to control its behavior. Many of
 the commands share similar options, and the option syntax is the same when
 this is the case. Below is a detailed explanation of each subcommand and
-its associated options
+its associated options.
 
 ### help
 Display help and usage message for the application
@@ -137,7 +137,15 @@ Not implemented yet
 ## Background
 I wrote this program to test multicast functionality in my network designs as I found
 existing tooling for testing multicast lacking. I needed a small portable binary
-that I could copy to any host for quick testing.
+that I could copy to any host for quick testing. This is especially useful for
+virtual lab environments.
+
+I also had a need to test and be able to observe traffic behavior in wireless
+networks to understand vendor configuration options that lead to the most robust
+multicast configuration for a wireless environment. To this point, with the correct
+set of options with this program, a single host can cause a DoS to an entire wireless
+segment if the wireless infrastructure isn't properly configured or the vendor does
+not provide the ability to configure or control multicast behavior.
 
 I took the opportunity to use this program to learn more about multicast and
 do some coding in Golang.
