@@ -12,7 +12,7 @@ or generic UDP traffic. It also allows simulation of IGMP joins, leaves, and
 querying.
 
 ## License
-This repository is licenses under GPLv3. See (LICENSE.md) for details.
+This repository is licenses under GPLv3. See (./LICENSE.md) for details.
 
 Copyright (C) 2018 Will Smith
 
