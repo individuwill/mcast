@@ -1,0 +1,250 @@
+
+// igmpv2: https://tools.ietf.org/html/rfc2236
+
+func sendTextTTL(message string) {
+	// TODO: Adjust TTL
+	udpAddr, err := net.ResolveUDPAddr("udp", "239.1.1.5:5050")
+	if err != nil {
+		log.Fatal(err)
+	}
+	udpConn, err := net.DialUDP("udp", nil, udpAddr)
+	newUDPConn := ipv4.NewPacketConn(udpConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer newUDPConn.Close()
+	defer udpConn.Close()
+	newUDPConn.SetMulticastTTL(20)
+	/*
+			n, err := newUDPConn.WriteTo([]byte(message), nil, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+		log.Printf("Wrote %d bytes", n)
+	*/
+	udpConn.Write([]byte(message))
+	log.Println(udpConn.LocalAddr())
+}
+
+func sendText(message string) {
+	// TODO: Adjust TTL
+	udpAddr, err := net.ResolveUDPAddr("udp", "239.1.1.5:5050")
+	if err != nil {
+		log.Fatal(err)
+	}
+	udpConn, err := net.DialUDP("udp", nil, udpAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer udpConn.Close()
+	udpConn.Write([]byte(message))
+	log.Println(udpConn.LocalAddr())
+}
+
+func computeChecksum(buf []byte) uint16 {
+	sum := uint32(0)
+
+	for ; len(buf) >= 2; buf = buf[2:] {
+		sum += uint32(buf[0])<<8 | uint32(buf[1])
+	}
+	if len(buf) > 0 {
+		sum += uint32(buf[0]) << 8
+	}
+	for sum > 0xffff {
+		sum = (sum >> 16) + (sum & 0xffff)
+	}
+	csum := ^uint16(sum)
+	/*
+	 * From RFC 768:
+	 * If the computed checksum is zero, it is transmitted as all ones (the
+	 * equivalent in one's complement arithmetic). An all zero transmitted
+	 * checksum value means that the transmitter generated no checksum (for
+	 * debugging or for higher level protocols that don't care).
+	 */
+	if csum == 0 {
+		csum = 0xffff
+	}
+	return csum
+}
+
+func query() {
+	ip, err := net.ResolveIPAddr("ip:2", "224.0.0.1")
+	if err != nil {
+		log.Println("Failed to resolve")
+		log.Fatal(err)
+	}
+	ipConn, err := net.DialIP("ip4:2", nil, ip)
+	if err != nil {
+		log.Println("Failed to dial")
+		log.Fatal(err)
+	}
+	defer ipConn.Close()
+	seconds := 10
+	msg := []byte{0x11, byte(seconds * 10), 0, 0,
+		0, 0, 0, 0}
+	checksum := computeChecksum(msg)
+	log.Printf("Checksum: %x\n", checksum)
+	msg[2] = byte(checksum >> 8)   //byte(0xee) // byte(checksum & 0x00FF)
+	msg[3] = byte(checksum & 0xFF) //byte(0x9b)          // byte((checksum & 0xFF00) >> 1)
+	n, err := ipConn.Write(msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Wrote %d bytes\n", n)
+}
+
+func rawJoin(address string) {
+	ip, err := net.ResolveIPAddr("ip:2", address)
+	if err != nil {
+		log.Println("Failed to resolve")
+		log.Fatal(err)
+	}
+	ipConn, err := net.DialIP("ip4:2", nil, ip)
+	if err != nil {
+		log.Println("Failed to dial")
+		log.Fatal(err)
+	}
+	defer ipConn.Close()
+
+	seconds := 10
+	ip4 := ip.IP.To4()
+	msg := []byte{0x12, byte(seconds * 10), 0, 0,
+		ip4[0], ip4[1], ip4[2], ip4[3]}
+	log.Println(ip.IP.To4()[0])
+	checksum := computeChecksum(msg)
+	log.Printf("Checksum: %x\n", checksum)
+	msg[2] = byte(checksum >> 8)   //byte(0xee) // byte(checksum & 0x00FF)
+	msg[3] = byte(checksum & 0xFF) //byte(0x9b)          // byte((checksum & 0xFF00) >> 1)
+	n, err := ipConn.Write(msg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Wrote %d bytes\n", n)
+}
+
+func rawJoinRouterAlert(address string) {
+	ip := net.ParseIP(address)
+	//ipConn, err := net.DialIP("ip:2", nil, ip)
+	ipConn, err := net.ListenPacket("ip4:2", "0.0.0.0")
+	if err != nil {
+		log.Println("Failed to dial")
+		log.Fatal(err)
+	}
+	defer ipConn.Close()
+
+	seconds := 10
+	ip4 := ip.To4()
+	msg := []byte{0x16, byte(seconds * 10), 0, 0,
+		ip4[0], ip4[1], ip4[2], ip4[3]}
+	checksum := computeChecksum(msg)
+	log.Printf("Checksum: %x\n", checksum)
+	msg[2] = byte(checksum >> 8)   //byte(0xee) // byte(checksum & 0x00FF)
+	msg[3] = byte(checksum & 0xFF) //byte(0x9b)          // byte((checksum & 0xFF00) >> 1)
+
+	rawConn, err := ipv4.NewRawConn(ipConn)
+	if err != nil {
+		log.Println("probelem getting raw socket")
+		log.Fatal(err)
+	}
+	defer rawConn.Close()
+	// router alert: https://tools.ietf.org/html/rfc2113
+	// option is 0x94
+	// order is option flags or val, length, 0, 0
+	options := []byte{0x94, 0x04, 0x0, 0x0}
+	hlen := ipv4.HeaderLen + len(options)
+	header := &ipv4.Header{
+		Version:  ipv4.Version,
+		Len:      hlen,
+		TOS:      0,
+		TotalLen: hlen + len(msg),
+		TTL:      1,
+		Protocol: 2,
+		Dst:      net.ParseIP(address),
+		Options:  options,
+	}
+	err = rawConn.WriteTo(header, msg, nil)
+	if err != nil {
+		log.Println("problem writing socket")
+		log.Fatal(err)
+	}
+	/*
+			n, err := ipConn.Write(msg)
+			if err != nil {
+				log.Fatal(err)
+			}
+		log.Printf("Wrote %d bytes\n", n)
+	*/
+}
+
+func builtinJoin(address string) {
+	c, err := net.ListenPacket("udp", address)
+	if err != nil {
+		log.Println("Problem creating listen")
+		log.Fatal(err)
+	}
+	defer c.Close()
+	p := ipv4.NewPacketConn(c)
+	addr, err := net.ResolveUDPAddr("udp", address)
+	if err != nil {
+		log.Println("Problem resolving UDP address")
+		log.Fatal(err)
+	}
+	en0, err := net.InterfaceByName("en0")
+	if err != nil {
+		log.Println("Problem getting interface")
+		log.Fatal(err)
+	}
+	err = p.JoinGroup(en0, addr)
+	if err != nil {
+		log.Println("Problem joining group")
+		log.Fatal(err)
+	}
+	defer p.LeaveGroup(nil, addr)
+}
+
+func rawLeave(address string) {
+	ip := net.ParseIP(address)
+	//ipConn, err := net.DialIP("ip:2", nil, ip)
+	ipConn, err := net.ListenPacket("ip4:2", "0.0.0.0")
+	if err != nil {
+		log.Println("Failed to dial")
+		log.Fatal(err)
+	}
+	defer ipConn.Close()
+
+	seconds := 10
+	ip4 := ip.To4()
+	msg := []byte{0x17, byte(seconds * 10), 0, 0,
+		ip4[0], ip4[1], ip4[2], ip4[3]}
+	checksum := computeChecksum(msg)
+	log.Printf("Checksum: %x\n", checksum)
+	msg[2] = byte(checksum >> 8)   //byte(0xee) // byte(checksum & 0x00FF)
+	msg[3] = byte(checksum & 0xFF) //byte(0x9b)          // byte((checksum & 0xFF00) >> 1)
+
+	rawConn, err := ipv4.NewRawConn(ipConn)
+	if err != nil {
+		log.Println("probelem getting raw socket")
+		log.Fatal(err)
+	}
+	defer rawConn.Close()
+	// router alert: https://tools.ietf.org/html/rfc2113
+	// option is 0x94
+	// order is option flags or val, length, 0, 0
+	options := []byte{0x94, 0x04, 0x0, 0x0}
+	hlen := ipv4.HeaderLen + len(options)
+	header := &ipv4.Header{
+		Version:  ipv4.Version,
+		Len:      hlen,
+		TOS:      0,
+		TotalLen: hlen + len(msg),
+		TTL:      1,
+		Protocol: 2,
+		Dst:      net.ParseIP("224.0.0.2"),
+		Options:  options,
+	}
+	err = rawConn.WriteTo(header, msg, nil)
+	if err != nil {
+		log.Println("problem writing socket")
+		log.Fatal(err)
+	}
+}
