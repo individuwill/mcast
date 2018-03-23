@@ -35,17 +35,21 @@ pipeline {
             }
         }
         
-        stage('Multicast Code Test') {
-            steps {
-                sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee ${testOutDir}/multicast.gotest'
-                sh 'cat ${testOutDir}/multicast.gotest | go-junit-report --package-name "multicast" > ${testOutDir}/multicast.xml'
-            }
-        }
+        stage('Code Tests') {
+            parallel {
+                stage('Multicast Code Test') {
+                    steps {
+                        sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee ${testOutDir}/multicast.gotest'
+                        sh 'cat ${testOutDir}/multicast.gotest | go-junit-report --package-name "multicast" > ${testOutDir}/multicast.xml'
+                    }
+                }
 
-        stage('CLI Code Test') {
-            steps {
-                sh 'go test -v github.com/individuwill/mcast 2>&1 | tee ${testOutDir}/cli.gotest'
-                sh 'cat ${testOutDir}/cli.gotest | go-junit-report --package-name "cli" > ${testOutDir}/cli.xml'
+                stage('CLI Code Test') {
+                    steps {
+                        sh 'go test -v github.com/individuwill/mcast 2>&1 | tee ${testOutDir}/cli.gotest'
+                        sh 'cat ${testOutDir}/cli.gotest | go-junit-report --package-name "cli" > ${testOutDir}/cli.xml'
+                    }
+                }
             }
         }
  
