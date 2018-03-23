@@ -42,6 +42,7 @@ pipeline {
         stage('CLI Code Test') {
             steps {
                 sh 'go test -v github.com/individuwill/mcast 2>&1 | tee testOutput/cli.gotest'
+                sh 'cat testOutput/cli.gotest | go-junit-report > testOutput/cli.xml'
             }
         }
  
@@ -52,6 +53,12 @@ pipeline {
                 // requires pipeline-utility-steps plugin
                 zip zipFile: 'binaries.zip', archive: true, dir: 'binaries'
             }
+        }
+    }
+
+    post {
+        always {
+            junit 'testOutput/*.xml'
         }
     }
 }
