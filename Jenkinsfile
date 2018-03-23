@@ -12,6 +12,8 @@ pipeline {
             steps {
                 sh 'printenv'
                 sh 'go version'
+                sh 'mkdir -p testOutput'
+                sh 'rm -rf testOutput/*'
                 sh 'mkdir -p ${workDir}'
                 sh 'rm -rf ${workDir}'
                 sh 'ln -s ${WORKSPACE} ${workDir}'
@@ -27,13 +29,13 @@ pipeline {
         
         stage('Multicast Code Test') {
             steps {
-                sh 'go test github.com/individuwill/mcast/multicast'
+                sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee testOutpu/multicast.xml'
             }
         }
 
         stage('CLI Code Test') {
             steps {
-                sh 'go test github.com/individuwill/mcast'
+                sh 'go test -v github.com/individuwill/mcast 2>&1'
             }
         }
  
