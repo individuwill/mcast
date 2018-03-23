@@ -36,6 +36,18 @@ func TestSplitCIDRNoSlash(t *testing.T) {
 	}
 }
 
+func TestIP4ToIntAndIntToIP4(t *testing.T) {
+	testList := []uint32{0, 2147483648, 4294967295}
+	//for i := uint32(0); i <= 10000; i++ { // 4294967295
+	for _, i := range testList {
+		ip := IntToIP4(i)
+		c := IP4ToInt(ip)
+		if c != i {
+			t.Errorf("IP to int conversion inconsistent. Expected %d, found %d for %v", i, c, ip)
+		}
+	}
+}
+
 func TestSplitCIDRWithSlash(t *testing.T) {
 	a, b, err := SplitCIDR("239.1.1.1/24")
 	if err != nil {
