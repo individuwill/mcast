@@ -22,12 +22,19 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'go build'
-                sh './build.sh'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh 'go test github.com/individuwill/mcast/multicast'
             }
         }
         
         stage('Package') {
             steps {
+                sh './build.sh'
+                sh 'rm -f binaries.zip'
                 // requires pipeline-utility-steps plugin
                 zip zipFile: 'binaries.zip', archive: true, dir: 'binaries'
             }
