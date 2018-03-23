@@ -21,6 +21,7 @@ BINDIR=binaries
 ARCH=amd64
 CLI=mcast
 
+mkdir -p $BINDIR
 rm -f $BINDIR/mac/*
 rm -f $BINDIR/linux/*
 rm -f $BINDIR/windows/*
@@ -28,6 +29,3 @@ rm -f $BINDIR/windows/*
 env GOOS=linux GOARCH=amd64 go build -o $BINDIR/linux/$CLI
 env GOOS=darwin GOARCH=amd64 go build -o $BINDIR/mac/$CLI
 env GOOS=windows GOARCH=amd64 go build -o $BINDIR/windows/$CLI.exe
-
-rm -f $BINDIR.zip
-zip -r $BINDIR.zip $BINDIR

@@ -1,29 +1,36 @@
 pipeline {
+    // requires docker plugin and docker installed on node
     agent { docker { image 'golang' } }
+
+    environment {
+        workDir = "/go/src/github.com/individuwill/mcast"
+        GOCACHE = "${env.WORKSPACE}/.cache"
+    }
+
     stages {
-        stage('build') {
+        stage('Prepare') {
             steps {
+                sh 'printenv'
                 sh 'go version'
-                sh 'go build'
+                sh 'mkdir -p ${workDir}'
+                sh 'rm -rf ${workDir}'
+                sh 'ln -s ${WORKSPACE} ${workDir}'
+                git 'https://github.com/individuwill/mcast.git'
             }
         }
-    }
-    post {
-        always {
-            echo 'always run after'
+
+        stage('Build') {
+            steps {
+                sh 'go build'
+                sh './build.sh'
+            }
         }
-        success {
-            echo 'only run after on success'
-        }
-        failure {
-            echo 'only run after on failure'
-        }
-        unstable {
-            echo 'only run after if marked unstable'
-        }
-        changed {
-            echo 'This will run only if the state of the Pipeline has changed'
-            echo 'For example, if the Pipeline was previously failing but is now successful'
+        
+        stage('Package') {
+            steps {
+                // requires pipeline-utility-steps plugin
+                zip zipFile: 'binaries.zip', archive: true, dir: 'binaries'
+            }
         }
     }
 }
