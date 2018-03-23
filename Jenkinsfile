@@ -1,3 +1,13 @@
+void setBuildStatus(String message, String state) {
+  step([
+      $class: "GitHubCommitStatusSetter",
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "https://github.com/individuwill/mcast"],
+      contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+  ]);
+}
+
 pipeline {
     // requires docker plugin and docker installed on node
     agent {
@@ -69,11 +79,11 @@ pipeline {
         }
 
         success {
-            githubNotify description: 'Build complete',  status: 'SUCCESS'
+            setBuildStatus('Build complete', 'SUCCESS')
         }
 
         failure {
-            githubNotify description: 'Build failure',  status: 'FAILURE'
+            setBuildStatus('Build failure', 'FAILURE')
         }
     }
 }
