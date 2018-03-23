@@ -3,6 +3,8 @@ pipeline {
     agent {
         docker {
             image 'golang'
+            // Will need to build and place into director the tool from:
+            // https://github.com/jstemmer/go-junit-report
             args '-v /usr/local/bin/go-junit-report:/usr/local/bin/go-junit-report'
         }
     }
@@ -10,6 +12,7 @@ pipeline {
     environment {
         workDir = "/go/src/github.com/individuwill/mcast"
         GOCACHE = "${env.WORKSPACE}/.cache"
+        testOutDir = 'testOutput'
     }
 
     stages {
@@ -17,8 +20,8 @@ pipeline {
             steps {
                 sh 'printenv'
                 sh 'go version'
-                sh 'mkdir -p testOutput'
-                sh 'rm -rf testOutput/*'
+                sh 'mkdir -p ${testOutDir}'
+                sh 'rm -rf ${testOutDir}/*'
                 sh 'mkdir -p ${workDir}'
                 sh 'rm -rf ${workDir}'
                 sh 'ln -s ${WORKSPACE} ${workDir}'
@@ -34,15 +37,15 @@ pipeline {
         
         stage('Multicast Code Test') {
             steps {
-                sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee testOutput/multicast.gotest'
-                sh 'cat testOutput/multicast.gotest | go-junit-report > testOutput/multicast.xml'
+                sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee ${testOutDir}/multicast.gotest'
+                sh 'cat ${testOutDir}/multicast.gotest | go-junit-report > ${testOutDir}/multicast.xml'
             }
         }
 
         stage('CLI Code Test') {
             steps {
-                sh 'go test -v github.com/individuwill/mcast 2>&1 | tee testOutput/cli.gotest'
-                sh 'cat testOutput/cli.gotest | go-junit-report > testOutput/cli.xml'
+                sh 'go test -v github.com/individuwill/mcast 2>&1 | tee ${testOutDir}/cli.gotest'
+                sh 'cat ${testOutDir}/cli.gotest | go-junit-report > ${testOutDir}/cli.xml'
             }
         }
  
