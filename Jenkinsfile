@@ -25,12 +25,18 @@ pipeline {
             }
         }
         
-        stage('Test') {
+        stage('Multicast Code Test') {
             steps {
                 sh 'go test github.com/individuwill/mcast/multicast'
             }
         }
-        
+
+        stage('CLI Code Test') {
+            steps {
+                sh 'go test github.com/individuwill/mcast'
+            }
+        }
+ 
         stage('Package') {
             steps {
                 sh './build.sh'
