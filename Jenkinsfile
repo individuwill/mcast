@@ -29,13 +29,13 @@ pipeline {
         
         stage('Multicast Code Test') {
             steps {
-                sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee testOutpu/multicast.xml'
+                sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee testOutput/multicast.gotest'
             }
         }
 
         stage('CLI Code Test') {
             steps {
-                sh 'go test -v github.com/individuwill/mcast 2>&1'
+                sh 'go test -v github.com/individuwill/mcast 2>&1 | tee testOutput/cli.gotest'
             }
         }
  
