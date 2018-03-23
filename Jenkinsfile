@@ -15,7 +15,7 @@ pipeline {
                 sh 'mkdir -p ${workDir}'
                 sh 'rm -rf ${workDir}'
                 sh 'ln -s ${WORKSPACE} ${workDir}'
-                git 'https://github.com/individuwill/mcast.git'
+                //git 'https://github.com/individuwill/mcast.git'
             }
         }
 
