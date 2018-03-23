@@ -1,6 +1,11 @@
 pipeline {
     // requires docker plugin and docker installed on node
-    agent { docker { image 'golang' } }
+    agent {
+        docker {
+            image 'golang'
+            args '-v /usr/local/bin/go-junit-report:/usr/local/bin/go-junit-report'
+        }
+    }
 
     environment {
         workDir = "/go/src/github.com/individuwill/mcast"
@@ -30,6 +35,7 @@ pipeline {
         stage('Multicast Code Test') {
             steps {
                 sh 'go test -v github.com/individuwill/mcast/multicast 2>&1 | tee testOutput/multicast.gotest'
+                sh 'cat testOutput/multicast.gotest | go-junit-report > testOutput/multicast.xml'
             }
         }
 
