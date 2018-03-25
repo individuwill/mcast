@@ -7,4 +7,6 @@ stages:
 
 build:
   stage: build
-  script: go build
+  script:
+    - ln -s ./ /go/src/github.com/individuwill/mcast
+    - go build
