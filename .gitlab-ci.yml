@@ -16,11 +16,12 @@ build:
     - printenv
     - go build
 
-test:
+test_mcast:
   stage: test
   script:
-    - ls
-    - ls -l /go/src/github.com/individuwill/mcast
-    - ls -l /go/src/github.com/individuwill/mcast/
-    #- go test ./...
+    - go test github.com/individuwill/mcast
+
+test_multicast:
+  stage: test
+  script:
     - go test github.com/individuwill/mcast/multicast
