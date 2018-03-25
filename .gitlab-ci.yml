@@ -19,9 +19,9 @@ build:
 test_mcast:
   stage: test
   script:
-    - go test github.com/individuwill/mcast
+    - go test -v github.com/individuwill/mcast
 
 test_multicast:
   stage: test
   script:
-    - go test github.com/individuwill/mcast/multicast
+    - go test -v github.com/individuwill/mcast/multicast
