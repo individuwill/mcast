@@ -22,4 +22,7 @@ build:
 test:
   stage: test
   script:
+    - ls
+    - ls -l /go/src/github.com/individuwill/mcast
+    - ls -l /go/src/github.com/individuwill/mcast/
     - go test ./...
