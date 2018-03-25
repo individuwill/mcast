@@ -12,7 +12,7 @@ build:
     - pwd
     - ls
     - mkdir -p /go/src/github.com/individuwill
-    - ln -s ./ /go/src/github.com/individuwill/mcast
+    - ln -s `pwd` /go/src/github.com/individuwill/mcast
     - ls
     - ls -l /go/src/github.com/individuwill/mcast
     - ls -l /go/src/github.com/individuwill/mcast/
