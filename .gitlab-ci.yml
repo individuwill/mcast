@@ -6,17 +6,14 @@ stages:
   - build
   - test
 
+before_script:
+  - mkdir -p /go/src/github.com/individuwill
+  - ln -s `pwd` /go/src/github.com/individuwill/mcast
+
 build:
   stage: build
   script:
     - printenv
-    - pwd
-    - ls
-    - mkdir -p /go/src/github.com/individuwill
-    - ln -s `pwd` /go/src/github.com/individuwill/mcast
-    - ls
-    - ls -l /go/src/github.com/individuwill/mcast
-    - ls -l /go/src/github.com/individuwill/mcast/
     - go build
 
 test:
