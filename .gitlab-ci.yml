@@ -1,0 +1,10 @@
+---
+image:
+  name: golang
+
+stages:
+  - build
+
+build:
+  stage: build
+  script: go build
