@@ -4,6 +4,7 @@ image:
 
 stages:
   - build
+  - test
 
 build:
   stage: build
@@ -17,3 +18,8 @@ build:
     - ls -l /go/src/github.com/individuwill/mcast
     - ls -l /go/src/github.com/individuwill/mcast/
     - go build
+
+test:
+  stage: test
+  script:
+    - go test ./...
