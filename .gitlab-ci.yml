@@ -8,5 +8,6 @@ stages:
 build:
   stage: build
   script:
+    - mkdir -p /go/src/github.com/individuwill/
     - ln -s ./ /go/src/github.com/individuwill/mcast
     - go build
