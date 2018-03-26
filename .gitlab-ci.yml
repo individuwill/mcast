@@ -30,12 +30,12 @@ test_multicast:
 test_race:
   stage: test
   script:
-    - go tes t-race -short $(go list ./... | grep -v /vendor/)
+    - go test -race -short $(go list ./... | grep -v /vendor/)
 
-test_memory:
-  stage: test
-  script:
-    - go test -msan -short $(go list ./... | grep -v /vendor/)
+# test_memory:
+#   stage: test
+#   script:
+#     - go test -msan -short $(go list ./... | grep -v /vendor/)
 
 test_coverage:
   stage: test
