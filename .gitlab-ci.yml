@@ -25,3 +25,20 @@ test_multicast:
   stage: test
   script:
     - go test -v github.com/individuwill/mcast/multicast
+
+test_race:
+  stage: test
+  script:
+    - go tes t-race -short $(go list ./... | grep -v /vendor/)
+
+test_memory:
+  stage: test
+  script:
+    - go test -msan -short $(go list ./... | grep -v /vendor/)
+
+test_coverage:
+  stage: test
+  script:
+    - mkdir cover
+    - for package in $(go list ./... | grep -v /vendor/); do go test -covermode=count -coverprofile "cover/${package##*/}.cov" "$package" ; done
+    - for cov in $(ls cover/*.cov); do go tool cover -func="$cov" ; done
