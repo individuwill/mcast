@@ -9,6 +9,7 @@ stages:
 before_script:
   - mkdir -p /go/src/github.com/individuwill
   - ln -s `pwd` /go/src/github.com/individuwill/mcast
+  - cd /go/src/github.com/individuwill/mcast
 
 build:
   stage: build
