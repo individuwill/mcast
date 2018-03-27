@@ -103,6 +103,9 @@ func IPList(network string, mask int) ([]net.IP, error) {
 
 // SplitCIDR returns the ip, or network portion and the mask as 2 separate values for a given address.
 func SplitCIDR(address string) (string, int, error) {
+	if !strings.Contains(address, "/") {
+		return address, 32, nil
+	}
 	addressParts := strings.Split(address, "/")
 	network := addressParts[0]
 	mask, err := strconv.ParseInt(addressParts[1], 10, 32)
